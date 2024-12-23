@@ -325,7 +325,7 @@ const RetroDashboard = () => {
       <CRTEffect />
       
       <nav className="flex justify-between items-center mb-6">
-        <h1 className="font-mono text-2xl">AGENCY.OS</h1>
+        <h1 className="font-mono text-2xl">THE_WATERMELON_GHOST</h1>
         <div className="flex gap-4">
           <Settings className="cursor-pointer hover:text-amber-400" />
           <Terminal className="cursor-pointer hover:text-amber-400" />

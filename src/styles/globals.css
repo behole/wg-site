@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-amber-950 text-amber-500;
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.15; }
+  50% { opacity: 0.2; }
+  100% { opacity: 0.15; }
+}
+
+.animate-scan {
+  animation: scan 8s linear infinite;
+}
+
+.animate-flicker {
+  animation: flicker 0.1s infinite;
+}

@@ -28,5 +28,5 @@ jobs:
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: 4k3_nWAzVBO8bnq8g-SAawpxggwGT09-7DYyXQRs
           environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
