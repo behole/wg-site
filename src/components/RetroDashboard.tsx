@@ -1,8 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal, Users, Briefcase, Heart, MessageSquare, Settings } from 'lucide-react';
-import { LineChart, Line, YAxis, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { 
+  Terminal, 
+  Users, 
+  Briefcase, 
+  Heart, 
+  MessageSquare, 
+  Settings,
+  HelpCircle,
+  Info
+} from 'lucide-react';
 
-const CRTEffect = () => (
+interface RetroWidgetProps {
+  title: string;
+  children: React.ReactNode;
+  icon: React.ElementType;
+}
+
+interface Project {
+  id: number;
+  name: string;
+  status: 'IN_PROGRESS' | 'PLANNING' | 'COMPLETED';
+  progress: number;
+  timeline: string;
+  type: string;
+}
+
+interface TeamMember {
+  name: string;
+  status: string;
+  project: string;
+}
+
+interface RoleData {
+  count: number;
+  status: TeamMember[];
+}
+
+interface TeamRoles {
+  [key: string]: RoleData;
+}
+
+interface MetricData {
+  color: string;
+  label: string;
+}
+
+interface Metrics {
+  [key: string]: MetricData;
+}
+
+interface DataPoint {
+  timestamp: Date;
+  [key: string]: any;
+}
+
+const CRTEffect: React.FC = () => (
   <div className="pointer-events-none fixed inset-0 z-50">
     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,115,0,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] animate-scan mix-blend-multiply"></div>
     <div className="absolute inset-0 opacity-[0.15] animate-flicker bg-gradient-to-b from-transparent via-amber-900/50 to-transparent"></div>
@@ -10,8 +63,25 @@ const CRTEffect = () => (
   </div>
 );
 
-const RetroWidget = ({ title, children, icon: Icon }) => {
+const Toolbar: React.FC = () => {
+  return (
+    <div className="fixed right-0 top-0 h-full w-16 bg-amber-950/95 border-l-2 border-amber-600/50 flex flex-col justify-between p-4">
+      <div className="space-y-6">
+        <Settings className="cursor-pointer hover:text-amber-400 transition-colors" />
+        <Terminal className="cursor-pointer hover:text-amber-400 transition-colors" />
+        <MessageSquare className="cursor-pointer hover:text-amber-400 transition-colors" />
+      </div>
+      <div className="space-y-6">
+        <HelpCircle className="cursor-pointer hover:text-amber-400 transition-colors" />
+        <Info className="cursor-pointer hover:text-amber-400 transition-colors" />
+      </div>
+    </div>
+  );
+};
+
+const RetroWidget: React.FC<RetroWidgetProps> = ({ title, children, icon: Icon }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   
   return (
     <div 
@@ -19,24 +89,37 @@ const RetroWidget = ({ title, children, icon: Icon }) => {
       onMouseLeave={() => setIsHovered(false)}
       className={`bg-amber-950/90 border-2 ${
         isHovered ? 'border-amber-500' : 'border-amber-600/50'
-      } p-4 rounded-lg flex flex-col transition-all duration-300 ${
+      } rounded-lg flex flex-col transition-all duration-300 ${
         isHovered ? 'shadow-lg shadow-amber-900/50' : ''
       }`}
     >
-      <div className="flex items-center mb-4 text-amber-500">
-        <Icon className="mr-2" size={20} />
-        <h3 className="font-mono text-lg">{title}</h3>
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer"
+        onClick={() => setIsMinimized(!isMinimized)}
+      >
+        <div className="flex items-center text-amber-500">
+          <Icon className="mr-2" size={20} />
+          <h3 className="font-mono text-lg">{title}</h3>
+        </div>
+        <div className="flex gap-2">
+          <div className="w-2 h-2 rounded-full bg-amber-500"/>
+          <div className="w-2 h-2 rounded-full bg-amber-600"/>
+          <div className="w-2 h-2 rounded-full bg-amber-700"/>
+        </div>
       </div>
-      <div className="flex-1">
+      <div className={`flex-1 transition-all duration-300 overflow-hidden ${
+        isMinimized ? 'h-0 p-0' : 'p-4'
+      }`}>
         {children}
       </div>
     </div>
   );
 };
 
-const WorkModule = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
-  const projects = [
+const WorkModule: React.FC = () => {
+  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  
+  const projects: Project[] = [
     { 
       id: 1, 
       name: 'Project Alpha', 
@@ -107,9 +190,10 @@ const WorkModule = () => {
   );
 };
 
-const TeamModule = () => {
-  const [selectedRole, setSelectedRole] = useState(null);
-  const roles = {
+const TeamModule: React.FC = () => {
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  
+  const roles: TeamRoles = {
     DESIGNERS: {
       count: 3,
       status: [
@@ -174,7 +258,7 @@ const TeamModule = () => {
   );
 };
 
-const ClientSlotMachine = () => {
+const ClientSlotMachine: React.FC = () => {
   const [spinning, setSpinning] = useState(false);
   const clients = ['Client A', 'Client B', 'Client C'];
   const [selected, setSelected] = useState(clients[0]);
@@ -205,21 +289,30 @@ const ClientSlotMachine = () => {
   );
 };
 
-const StatsModule = () => {
-  const [activeMetrics, setActiveMetrics] = useState(['projects', 'uptime']);
-  const [data, setData] = useState([]);
+const StatsModule: React.FC = () => {
+  const [activeMetrics, setActiveMetrics] = useState<string[]>(['projects', 'uptime']);
+  const [data, setData] = useState<DataPoint[]>([]);
   
-  const generateDataPoint = (timestamp) => ({
-    timestamp,
-    projects: Math.floor(Math.random() * 20) + 130,
-    uptime: Math.floor(Math.random() * 5) + 95,
-    status: Math.floor(Math.random() * 30) + 70,
-    engagement: Math.floor(Math.random() * 40) + 60,
-    performance: Math.floor(Math.random() * 25) + 75,
-    velocity: Math.floor(Math.random() * 35) + 65,
-  });
+  const metrics: Metrics = {
+    projects: { color: '#F59E0B', label: 'PROJECTS' },
+    uptime: { color: '#10B981', label: 'UPTIME' },
+    status: { color: '#3B82F6', label: 'STATUS' },
+    engagement: { color: '#8B5CF6', label: 'ENGAGEMENT' },
+    performance: { color: '#EC4899', label: 'PERFORMANCE' },
+    velocity: { color: '#F97316', label: 'VELOCITY' }
+  };
 
   useEffect(() => {
+    const generateDataPoint = (timestamp: Date): DataPoint => ({
+      timestamp,
+      projects: Math.floor(Math.random() * 20) + 80,
+      uptime: Math.floor(Math.random() * 5) + 95,
+      status: Math.floor(Math.random() * 30) + 70,
+      engagement: Math.floor(Math.random() * 40) + 60,
+      performance: Math.floor(Math.random() * 25) + 75,
+      velocity: Math.floor(Math.random() * 35) + 65
+    });
+
     const initialData = Array.from({ length: 20 }, (_, i) => 
       generateDataPoint(new Date(Date.now() - (19 - i) * 1000)));
     setData(initialData);
@@ -234,66 +327,32 @@ const StatsModule = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const metrics = {
-    projects: { color: '#F59E0B', label: 'PROJECTS' },
-    uptime: { color: '#10B981', label: 'UPTIME' },
-    status: { color: '#3B82F6', label: 'STATUS' },
-    engagement: { color: '#8B5CF6', label: 'ENGAGEMENT' },
-    performance: { color: '#EC4899', label: 'PERFORMANCE' },
-    velocity: { color: '#F97316', label: 'VELOCITY' },
-  };
-
-  const toggleMetric = (metric) => {
-    setActiveMetrics(prev => 
-      prev.includes(metric) 
-        ? prev.filter(m => m !== metric)
-        : [...prev, metric]
-    );
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {Object.entries(metrics).map(([key, { label }]) => (
+        {Object.entries(metrics).map(([key, metric]) => (
           <button
             key={key}
-            onClick={() => toggleMetric(key)}
+            onClick={() => setActiveMetrics(prev => 
+              prev.includes(key) 
+                ? prev.filter(m => m !== key)
+                : [...prev, key]
+            )}
             className={`px-2 py-1 text-xs font-mono rounded transition-colors ${
               activeMetrics.includes(key)
                 ? 'bg-amber-600 text-black'
                 : 'bg-black/20 text-amber-500'
             }`}
           >
-            {label}
+            {metric.label}
           </button>
         ))}
       </div>
       
       <div className="bg-black/20 rounded-lg p-2 h-48">
-        <LineChart width={450} height={180} data={data}>
-          <YAxis 
-            domain={[0, 100]} 
-            stroke="#92400E"
-            tick={{ fill: '#92400E' }}
-            width={30}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#78350F',
-              border: '1px solid #92400E',
-              borderRadius: '4px',
-              color: '#F59E0B',
-              fontFamily: 'monospace'
-            }}
-            formatter={(value, name) => [
-              `${value}${name === 'uptime' ? '%' : ''}`,
-              metrics[name].label
-            ]}
-            labelFormatter={(label) => {
-              const date = new Date(label);
-              return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-            }}
-          />
+        <LineChart width={400} height={150} data={data}>
+          <YAxis domain={[0, 100]} stroke="#92400E" tick={{ fill: '#92400E' }} />
+          <Tooltip />
           {activeMetrics.map(metric => (
             <Line
               key={metric}
@@ -306,33 +365,19 @@ const StatsModule = () => {
           ))}
         </LineChart>
       </div>
-
-      <div className="grid grid-cols-2 gap-2 font-mono text-sm">
-        {activeMetrics.map(metric => (
-          <div key={metric} className="flex justify-between">
-            <span>{metrics[metric].label}:</span>
-            <span>{data[data.length - 1]?.[metric] || 0}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
 
-const RetroDashboard = () => {
+const RetroDashboard: React.FC = () => {
   return (
-    <div className="min-h-screen bg-amber-950 text-amber-500 p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-amber-950 text-amber-500 p-6 pr-24 relative overflow-hidden">
       <CRTEffect />
       
       <nav className="flex justify-between items-center mb-6">
-        <h1 className="font-mono text-2xl">THE_WATERMELON_GHOST</h1>
-        <div className="flex gap-4">
-          <Settings className="cursor-pointer hover:text-amber-400" />
-          <Terminal className="cursor-pointer hover:text-amber-400" />
-          <MessageSquare className="cursor-pointer hover:text-amber-400" />
-        </div>
+        <h1 className="font-mono text-2xl">AGENCY.OS</h1>
       </nav>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <RetroWidget title="CLIENTS" icon={Users}>
           <ClientSlotMachine />
@@ -369,6 +414,8 @@ const RetroDashboard = () => {
           <StatsModule />
         </RetroWidget>
       </div>
+
+      <Toolbar />
     </div>
   );
 };
