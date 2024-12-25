@@ -375,7 +375,7 @@ const RetroDashboard: React.FC = () => {
       <CRTEffect />
       
       <nav className="flex justify-between items-center mb-6">
-        <h1 className="font-mono text-2xl">AGENCY.OS</h1>
+        <h1 className="font-mono text-2xl">THE WATERMELONGHOST</h1>
       </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
